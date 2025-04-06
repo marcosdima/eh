@@ -1,0 +1,3 @@
+[submodule "custom_godot"]
+	path = custom_godot
+	url = https://github.com/marcosdima/custom_godot.git
