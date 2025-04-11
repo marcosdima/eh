@@ -48,12 +48,28 @@ func get_direct_children() -> Array[Node]:
 	return children.filter(func(child): return not find_if_sub_child.call(child))
 
 
+func get_container_position() -> Vector2:
+	var parent = self.get_parent()
+	if parent is Contenedor:
+		return parent.position + parent.get_container_position()
+	else:
+		return Vector2.ZERO
+
+
 func set_element_position(p: Vector2) -> void:
 	self.position = p
 
 
 func set_hit_area():
-	self.hit_area = Rect2(self.position.x, self.position.y, self.size.x, self.size.y)
+	var pos = self.position + self.get_container_position()
+
+	self.hit_area = Rect2(
+		pos.x,
+		pos.y,
+		self.size.x,
+		self.size.y,
+	)
+
 
 ##############################################################
 ## This functions will be overwritted by another sub-clases ##
@@ -62,7 +78,7 @@ func set_hit_area():
 func handle_resize():
 	for child in self.get_direct_children():
 		child.position = Vector2(0, 0)
-	
+		
 		if child is Element:
 			var c = child as Element
 			c.set_proportional_size(self.size)
@@ -93,27 +109,30 @@ var mouse_on = false
 var click_on = false
 
 func _input(event):
-	if self.has_point(event.position):
-		if event is InputEventMouseMotion and !self.click_on: ## Mouse on element.
-			emit_signal("on_mouse_on")
-			self.mouse_on = true
-			self.handle_mouse_on()
-		elif event is InputEventMouseButton and event.pressed: ## Mouse on clicked on element.
-			emit_signal("on_click")
-			self.click_on = true
-			self.handle_click(event.position)
-		elif event is InputEventMouseButton and event.is_released(): ## Mouse realesed click on element.
-			emit_signal("on_click_released")
-			self.click_on = false
-			self.handle_release_click()
-	else:
-		if self.click_on:
-			self.click_on = false
-		
-		if self.mouse_on:
-			emit_signal("on_mouse_out")
-			self.mouse_on = false
-			self.handle_on_mouse_out()
+	if !self.visible:
+		return
+	
+	if event is InputEventMouse:
+		if self.has_point(event.position):
+			if event is InputEventMouseMotion and !self.click_on: ## Mouse on element.
+				emit_signal("on_mouse_on")
+				self.mouse_on = true
+				self.handle_mouse_on()
+			elif event is InputEventMouseButton and event.pressed and self.mouse_on: ## Mouse on clicked on element.
+				emit_signal("on_click")
+				self.handle_click(event.position)
+			elif event is InputEventMouseButton and event.is_released(): ## Mouse realesed click on element.
+				emit_signal("on_click_released")
+				self.click_on = false
+				self.handle_release_click()
+		else:
+			if self.click_on:
+				self.click_on = false
+			
+			if self.mouse_on:
+				emit_signal("on_mouse_out")
+				self.mouse_on = false
+				self.handle_on_mouse_out()
 
 
 func _draw():

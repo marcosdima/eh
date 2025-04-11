@@ -11,13 +11,23 @@ config_version=5
 [application]
 
 config/name="Eh?"
+run/main_scene="uid://blnq17wjsesxk"
 config/features=PackedStringArray("4.4", "Mobile")
 config/icon="res://icon.svg"
 
+[autoload]
+
+Global="*res://Global.gd"
+
+[display]
+
+window/handheld/orientation=1
+
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/custom_godot/addons/custom_components/plugin.cfg")
+enabled=PackedStringArray("res://addons/custom_components/plugin.cfg")
 
 [rendering]
 
 renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true

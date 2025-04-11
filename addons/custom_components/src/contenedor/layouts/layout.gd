@@ -5,6 +5,7 @@ var contenedor: Contenedor = null
 ## Handle elements placement.
 func move_contenedor_elements():
 	self.start()
+	
 	for element in self.contenedor.get_elements():
 		self.handle_element(element)
 

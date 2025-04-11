@@ -7,11 +7,8 @@ enum LayoutType {
 	Flow,
 	Rail,
 }
-static var paths = {
-	LayoutType.Flow: "res://src/contenedor/layouts/types/flow/flow_layout.gd",
-	LayoutType.Rail: "res://src/contenedor/layouts/types/rail/rail_layout.gd",
-}
 @export var layout_type: LayoutType = LayoutType.Flow
+@export var vertical: bool = true
 
 @export_group("Margin")
 @export var margin_top: int = 0
@@ -25,19 +22,9 @@ var layout: Layout = null
 
 ## With [param layout_type] gets an script and instantiate a layout, to handle content moving.
 func handle_resize():
-	if self.paths:
-		var script = load(self.paths[self.layout_type])
-		
-		if script:
-			var instance = script.new()
-		
-			if instance is Layout:
-				instance.set_contenedor(self)
-				self.layout = instance
-			else:
-				push_error("Instance should be Layout!")
-			
-			self.layout.move_contenedor_elements()
+	if self.layout_type:
+		self.set_layout()
+		self.layout.move_contenedor_elements()
 
 
 ## Set [param position].
@@ -50,7 +37,7 @@ func get_elements() -> Array[Element]:
 	var result: Array[Element] = []
 	
 	for child in self.get_direct_children():
-		if child is Element:
+		if child is Element and child.visible:
 			result.append(child as Element)
 	
 	return result
@@ -77,7 +64,7 @@ func get_margin_size() -> Vector2:
 	
 	var margin_b = self.margin_bottom * unit_y
 	var margin_r = self.margin_rigth * unit_x
-	
+
 	return Vector2(margin_r, margin_b)
 
 
@@ -98,3 +85,19 @@ func get_space() -> Vector2:
 	var space_x = (self.size.x / 100) * self.space_between
 	
 	return Vector2(space_x, space_y)
+
+
+func set_layout() -> void:
+	var l: Layout = null
+	
+	match self.layout_type:
+		LayoutType.Flow:
+			l = FlowLayout.new()
+		LayoutType.Rail:
+			var rail = RailLayout.new()
+			rail.vertical = self.vertical
+			l = rail
+	
+	l.set_contenedor(self)
+	
+	self.layout = l
